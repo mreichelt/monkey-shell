@@ -1,15 +1,16 @@
 import 'dart:html';
+
 import 'package:monkey_lang/ast/ast.dart';
 import 'package:monkey_lang/evaluator/evaluator.dart';
 import 'package:monkey_lang/lexer/lexer.dart';
 import 'package:monkey_lang/object/environment.dart';
 import 'package:monkey_lang/object/object.dart';
 import 'package:monkey_lang/parser/parser.dart';
+import 'package:monkey_lang/monkey/monkey.dart';
 
 void main() {
   Environment env = new Environment.freshEnvironment();
-  String history = 'Hello! This is the Monkey programming language!\n'
-      'Feel free to type in commands\n';
+  String history = Monkey.WELCOME + '\n';
   String input = '';
 
   InputElement inbox = document.getElementById('inbox');
@@ -20,12 +21,18 @@ void main() {
     outbox.scrollTop = outbox.scrollHeight;
   };
 
+  Monkey.monkeyPrint = (Object object) {
+    history += '$object\n';
+    refreshOutbox();
+  };
+
   inbox.onKeyUp.forEach((KeyboardEvent event) {
     input = inbox.value;
     if (event.keyCode == KeyCode.ENTER) {
+      history += '>> $input\n';
       String evaluated = evaluate(input, env);
       bool nothing = evaluated == null || evaluated == '';
-      history += '>> $input\n$evaluated${nothing ? '' : '\n'}';
+      history += '$evaluated${nothing ? '' : '\n'}';
       inbox.value = input = '';
     }
     refreshOutbox();
@@ -37,6 +44,11 @@ void main() {
 String evaluate(String input, Environment env) {
   Parser parser = new Parser(new Lexer(input));
   Program program = parser.parseProgram();
+
+  if (parser.hasErrors()) {
+    return parser.getErrorsAsString();
+  }
+
   try {
     MonkeyObject evaluated = eval(program, env);
     if (evaluated != null) {

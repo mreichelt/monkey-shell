@@ -4,7 +4,7 @@ version: 0.9.0
 environment:
   sdk: '>=1.19.0 <2.0.0'
 dependencies:
-  monkey_lang: ^0.9.4
+  monkey_lang: ^0.9.6
   html: ^0.13.1
 dev_dependencies:
   browser: ^0.10.0
